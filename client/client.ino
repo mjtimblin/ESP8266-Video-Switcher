@@ -1,8 +1,8 @@
 /* 
- * This is code for the client (remote) for a video switcher based on ESP8266 models for communication.
- * The entire project can be found at https://github.com/mjtimblin/ESP8266-Video-Switcher. I had some 
- * inspiration from https://www.geekstips.com/two-esp8266-communication-talk-each-other/. Check out 
- * their project for more information. 
+ * This is code for the client (remote) for a video switcher project based on ESP8266 modules for 
+ * communication. The entire project can be found at https://github.com/mjtimblin/ESP8266-Video-Switcher. 
+ * I had some inspiration from https://www.geekstips.com/two-esp8266-communication-talk-each-other/. 
+ * Check out their project for more information. 
  */
 
 #include <ESP8266WiFi.h>
