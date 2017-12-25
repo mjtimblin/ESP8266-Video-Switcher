@@ -9,8 +9,8 @@
 #include <ESP8266HTTPClient.h>
 #include <Bounce2.h>
 
-const char* AP_SSID = "video-switcher";
-const char* AP_PASSWORD = "esp8266";
+const char* AP_SSID = "ESP8266 Video Switcher";
+const char* AP_PASSWORD = "password";
 const String SERVER_URL = "http://192.168.4.1/video";
 const int BUTTON_PIN = 2; // Button input on ESP8266 GPIO2
 
