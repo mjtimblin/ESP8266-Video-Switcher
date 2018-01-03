@@ -1,81 +1,64 @@
-/* 
- * This is code for the client (remote) for a video switcher project based on ESP8266 modules for 
- * communication. The entire project can be found at https://github.com/mjtimblin/ESP8266-Video-Switcher. 
- * I had some inspiration from https://www.geekstips.com/two-esp8266-communication-talk-each-other/. 
- * Check out their project for more information. 
- */
-
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <Bounce2.h>
 
+const int BUTTON_PIN = 2; // Button input on ESP8266 GPIO2
 const char* AP_SSID = "ESP8266 Video Switcher";
 const char* AP_PASSWORD = "password";
-const String SERVER_URL = "http://192.168.4.1/video";
-const int BUTTON_PIN = 2; // Button input on ESP8266 GPIO2
+const String HOST = "192.168.4.1";
+const int PORT = 80;
 
 Bounce debouncer = Bounce();
-IPAddress ip(192, 168, 4, 4);
-IPAddress gateway(192, 168, 4, 1);
-IPAddress subnet(255, 255, 255, 0);
+bool previousButtonState = true;
 
 void setup() 
 {
-  bool setupSuccess;
-  ESP.eraseConfig();
-  WiFi.persistent(false);
-  Serial.begin(74880);
-  setupButton();
-  setupSuccess = setupWifi();
-  if (!setupSuccess)
-  {
-    while(1);
-  }
-}
-
-void setupButton()
-{
+  Serial.begin(9600);
+  Serial.println();
+  
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   debouncer.attach(BUTTON_PIN);
   debouncer.interval(5);
-}
-
-bool setupWifi()
-{
-  bool result = true;
+  
   WiFi.mode(WIFI_STA);
-  WiFi.config(ip, gateway, subnet);
-  WiFi.begin(AP_SSID, AP_PASSWORD);
-  int attempts = 0;
+  WiFi.begin(AP_SSID, AP_PASSWORD);  
+  Serial.print("Connecting..");
+ 
   while (WiFi.status() != WL_CONNECTED) 
   {
-    if(attempts > 20)
-    {
-      result = false;
-      break;
-    }
-    delay(500);
-    attempts++;
+    delay(1000);
+    Serial.print(".");
   }
-  return result;
+  Serial.println("\n Connected");
 }
 
 void sendNextCommand()
 {
- HTTPClient http;
- http.begin(SERVER_URL);
- http.addHeader("Content-Type", "application/x-www-form-urlencoded");
- http.POST("cmd=next"); 
- http.writeToStream(&Serial);
- http.end();
+  HTTPClient http; 
+  http.begin(HOST, PORT, "/video");
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded"); 
+  int httpCode = http.POST("cmd=next");
+  if (httpCode > 0)
+  {
+    String payload = http.getString();  
+    Serial.println(payload); 
+  }
+  else 
+  {
+    Serial.println("Request failed, error: " + http.errorToString(httpCode));
+  }
+  http.end();
 }
 
 void loop() 
 {
   debouncer.update();
-  if (debouncer.read() == LOW)
+  bool currentButtonState = debouncer.read();
+  if (previousButtonState && !currentButtonState)
   {
+    Serial.println("Button pressed");
     sendNextCommand();
   }
+  previousButtonState = currentButtonState;
 }
 
